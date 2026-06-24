@@ -16,7 +16,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
 
     find("#any_login_form_toggle_label").click
     click_button @user.email
-    sleep 0.2
+    Selenium::WebDriver::Wait.new(timeout: Capybara.default_max_wait_time).until { @user.reload.sign_in_count.positive? }
 
     visit "/about"
 

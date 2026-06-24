@@ -1,4 +1,6 @@
 <% tab_config = any_login_tab_config %>
+<% users_payload = any_login_users_payload %>
+<% recent_users_payload = any_login_recent_users_payload %>
 <%= render "any_login/assets/js" %>
 <%= render "any_login/assets/css" %>
 
@@ -6,10 +8,7 @@
   id="any_login"
   class="<%= any_login_klasses %>"
   data-any-login
-  data-any-login-users="<%= h(any_login_users_payload.to_json) %>"
-  data-any-login-recent="<%= h(any_login_recent_users_payload.to_json) %>"
   data-any-login-default-tab="<%= h(tab_config[:default]) %>"
-  data-any-login-multi-tabs="<%= tab_config[:multi] ? "true" : "false" %>"
 >
   <%= form_tag any_login.sign_in_path, method: :post, id: "any_login_form" do %>
     <input type="checkbox" id="any_login_form_toggle" class="any_login_toggle_input" <%= AnyLogin.auto_show ? "checked" : "" %> aria-hidden="true" tabindex="-1">
@@ -66,10 +65,21 @@
                 aria-autocomplete="list"
               >
               <ul id="any_login_user_list" class="any_login_listbox" role="listbox" aria-label="Users">
-                <% any_login_users_payload.each do |user| %>
-                  <li role="presentation">
-                    <button type="submit" name="selected_id" value="<%= h(user[:id]) %>" class="any_login_list_option" role="option" data-user-id="<%= h(user[:id]) %>">
+                <% users_payload.each do |user| %>
+                  <li role="presentation" data-any-login-user>
+                    <button
+                      type="submit"
+                      name="selected_id"
+                      value="<%= h(user[:id]) %>"
+                      class="any_login_list_option"
+                      role="option"
+                      data-user-id="<%= h(user[:id]) %>"
+                      data-search="<%= h([user[:label], user[:id], user[:group]].compact.join(" ")) %>"
+                    >
                       <span class="any_login_list_option_label"><%= user[:label] %></span>
+                      <% if user[:group].present? %>
+                        <span class="any_login_list_option_badge"><%= user[:group] %></span>
+                      <% end %>
                     </button>
                   </li>
                 <% end %>
@@ -108,7 +118,7 @@
             <%= tab_config[:default] == "recent" ? "" : 'hidden="hidden"' %>
           >
             <ul id="any_login_recent_list" class="any_login_recent_list" role="list">
-              <% any_login_recent_users_payload.each do |user| %>
+              <% recent_users_payload.each do |user| %>
                 <li role="listitem">
                   <button type="submit" name="back_to_previous_id" value="<%= h(user[:id]) %>" class="any_login_list_option">
                     <span class="any_login_list_option_label"><%= user[:label] %></span>
@@ -116,7 +126,6 @@
                 </li>
               <% end %>
             </ul>
-            <p class="any_login_empty any_login_recent_empty" hidden>No recent users yet. Switch accounts to build history.</p>
           </div>
         <% end %>
       </div>

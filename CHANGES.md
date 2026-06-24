@@ -2,7 +2,7 @@
 
 ## 1.7.0
 
-- modern dev login UI: floating FAB, tabbed panel (Users / ID / Recent), fuzzy user search, keyboard shortcut (Ctrl/Cmd+Shift+L)
+- modern dev login UI: floating FAB, tabbed panel (Users / ID / Recent), user search, keyboard shortcut (Ctrl/Cmd+Shift+L)
 - `login_on` now controls which tabs appear in the panel
 - removed unused view helpers `any_login_select`, `any_login_previous_select`, `select_html_options` (use default partial)
 

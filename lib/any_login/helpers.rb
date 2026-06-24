@@ -17,30 +17,31 @@ module AnyLogin
       end
 
       def any_login_tab_config
-        users_tab = AnyLogin.login_on != :id
-        id_tab = AnyLogin.login_on != :select
-        recent_tab = any_login_recent_users_payload.any?
-        tabs = []
-        tabs << { key: "users", label: "Users" } if users_tab
-        tabs << { key: "id", label: "ID" } if id_tab
-        tabs << { key: "recent", label: "Recent" } if recent_tab
-        default = tabs.first&.dig(:key) || "users"
-        { tabs: tabs, default: default, multi: tabs.size > 1 }
+        @any_login_tab_config ||= begin
+          tabs = []
+          tabs << { key: "users", label: "Users" } if AnyLogin.login_on != :id
+          tabs << { key: "id", label: "ID" } if AnyLogin.login_on != :select
+          tabs << { key: "recent", label: "Recent" } if any_login_recent_users_payload.any?
+
+          { tabs: tabs, default: tabs.first&.dig(:key) || "users", multi: tabs.size > 1 }
+        end
       end
 
       def any_login_users_payload
-        collection = AnyLogin.collection
-        if collection.grouped?
-          collection.to_a.flat_map do |group_name, pairs|
-            pairs.map { |label, id| { id: id.to_s, label: label.to_s, group: group_name.to_s } }
+        @any_login_users_payload ||= begin
+          collection = AnyLogin.collection
+          if collection.grouped?
+            collection.to_a.flat_map do |group_name, pairs|
+              pairs.map { |label, id| { id: id.to_s, label: label.to_s, group: group_name.to_s } }
+            end
+          else
+            collection.to_a.map { |label, id| { id: id.to_s, label: label.to_s, group: nil } }
           end
-        else
-          collection.to_a.map { |label, id| { id: id.to_s, label: label.to_s, group: nil } }
         end
       end
 
       def any_login_recent_users_payload
-        any_login_previous_ids.filter_map do |id|
+        @any_login_recent_users_payload ||= any_login_previous_ids.filter_map do |id|
           user = AnyLogin.klass.where(AnyLogin.klass.primary_key => id).first
           next unless user
 
@@ -66,9 +67,11 @@ module AnyLogin
 
         label, = any_login_user_label_and_id(user)
         content_tag :span, class: "any_login_user_information" do
-          raw(
-            "<span class=\"any_login_session_label\">#{h(label)}</span>" \
-            "<span class=\"any_login_session_id\">#{h(user.id)}</span>"
+          safe_join(
+            [
+              content_tag(:span, label, class: "any_login_session_label"),
+              content_tag(:span, user.id, class: "any_login_session_id")
+            ]
           )
         end
       end

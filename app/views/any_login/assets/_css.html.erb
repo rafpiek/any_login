@@ -205,17 +205,13 @@
   }
 
   #any_login .any_login_tabpanel {
-    display: none;
+    display: flex;
     flex-direction: column;
     gap: 10px;
   }
 
-  #any_login .any_login_tabpanel.is-active {
-    display: flex;
-  }
-
   #any_login .any_login_tabpanel[hidden] {
-    display: none !important;
+    display: none;
   }
 
   #any_login .any_login_label {
@@ -268,15 +264,6 @@
     border: none;
     border-radius: 0;
     background: transparent;
-  }
-
-  #any_login .any_login_list_group {
-    padding: 6px 8px 4px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--any-login-muted);
   }
 
   #any_login .any_login_list_option {
@@ -378,7 +365,4 @@
     white-space: nowrap;
   }
 
-  #any_login[data-any-login-multi-tabs="false"] .any_login_tabs {
-    display: none;
-  }
 </style>
