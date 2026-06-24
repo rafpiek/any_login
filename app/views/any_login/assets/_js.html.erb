@@ -294,8 +294,30 @@
       }
     }
 
+    function setupKeyboardShortcut() {
+      if (window.__anyLoginShortcutBound) return;
+      window.__anyLoginShortcutBound = true;
+
+      document.addEventListener("keydown", function (event) {
+        var key = event.key && event.key.toLowerCase();
+        if (key !== "l" || !event.shiftKey) return;
+        if (!event.ctrlKey && !event.metaKey) return;
+
+        var root = document.querySelector("[data-any-login]");
+        if (!root) return;
+
+        var toggle = root.querySelector("#any_login_form_toggle");
+        if (!toggle) return;
+
+        event.preventDefault();
+        toggle.checked = !toggle.checked;
+        toggle.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
+
     function boot() {
       document.querySelectorAll("[data-any-login]").forEach(initRoot);
+      setupKeyboardShortcut();
     }
 
     ["DOMContentLoaded", "turbolinks:load", "turbo:load"].forEach(function (e) {

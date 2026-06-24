@@ -18,7 +18,7 @@
 
     <input type="checkbox" id="any_login_form_toggle" class="any_login_toggle_input" <%= AnyLogin.auto_show ? "checked" : "" %> aria-hidden="true" tabindex="-1">
 
-    <label for="any_login_form_toggle" id="any_login_form_toggle_label" class="any_login_fab" title="Switch user (AnyLogin)" aria-label="Open user switcher">
+    <label for="any_login_form_toggle" id="any_login_form_toggle_label" class="any_login_fab" title="Switch user (Ctrl+Shift+L)" aria-label="Open user switcher">
       <%= render "any_login/svg/user", title: AnyLogin.klass %>
     </label>
 
