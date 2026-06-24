@@ -12,9 +12,6 @@
   data-any-login-multi-tabs="<%= tab_config[:multi] ? "true" : "false" %>"
 >
   <%= form_tag any_login.sign_in_path, method: :post, id: "any_login_form" do %>
-    <%= hidden_field_tag :selected_id, "", id: "any_login_selected_id" %>
-    <%= hidden_field_tag :back_to_previous_id, "", id: "any_login_back_to_previous_id" %>
-
     <input type="checkbox" id="any_login_form_toggle" class="any_login_toggle_input" <%= AnyLogin.auto_show ? "checked" : "" %> aria-hidden="true" tabindex="-1">
 
     <label for="any_login_form_toggle" id="any_login_form_toggle_label" class="any_login_fab" title="Switch user (Ctrl+Shift+L)" aria-label="Open user switcher">

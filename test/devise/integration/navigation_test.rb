@@ -15,7 +15,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
     visit "/"
 
     find("#any_login_form_toggle_label").click
-    find("#any_login_user_list .any_login_list_option", match: :first).click
+    click_button @user.email
 
     visit "/about"
 

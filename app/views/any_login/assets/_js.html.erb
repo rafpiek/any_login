@@ -28,15 +28,6 @@
       return 0;
     }
 
-    function submitForm(form, fieldName, value) {
-      var selected = form.querySelector("#any_login_selected_id");
-      var back = form.querySelector("#any_login_back_to_previous_id");
-      var idInput = form.querySelector("#any_login_id_input");
-      if (selected) selected.value = fieldName === "selected_id" ? value : "";
-      if (back) back.value = fieldName === "back_to_previous_id" ? value : "";
-      if (idInput) idInput.value = fieldName === "id" ? value : "";
-      form.submit();
-    }
 
     function focusActivePanelInput(root) {
       var panel = root.querySelector(".any_login_tabpanel.is-active");
@@ -116,7 +107,10 @@
         var li = document.createElement("li");
         li.setAttribute("role", "presentation");
         var btn = document.createElement("button");
-        btn.type = "button";
+        btn.type = "submit";
+        btn.name = "selected_id";
+        btn.setAttribute("form", "any_login_form");
+        btn.value = u.id;
         btn.className = "any_login_list_option";
         btn.setAttribute("role", "option");
         btn.setAttribute("data-user-id", u.id);
@@ -134,9 +128,6 @@
           btn.appendChild(badge);
         }
 
-        btn.addEventListener("click", function () {
-          submitForm(root.querySelector("#any_login_form"), "selected_id", u.id);
-        });
         li.appendChild(btn);
         listEl.appendChild(li);
         options.push(btn);
@@ -155,15 +146,15 @@
         var li = document.createElement("li");
         li.setAttribute("role", "listitem");
         var btn = document.createElement("button");
-        btn.type = "button";
+        btn.type = "submit";
+        btn.name = "back_to_previous_id";
+        btn.setAttribute("form", "any_login_form");
+        btn.value = u.id;
         btn.className = "any_login_list_option";
         var label = document.createElement("span");
         label.className = "any_login_list_option_label";
         label.textContent = u.label;
         btn.appendChild(label);
-        btn.addEventListener("click", function () {
-          submitForm(root.querySelector("#any_login_form"), "back_to_previous_id", u.id);
-        });
         li.appendChild(btn);
         listEl.appendChild(li);
       });
@@ -271,18 +262,6 @@
       var recentList = root.querySelector("#any_login_recent_list");
       var recentEmpty = root.querySelector(".any_login_recent_empty");
       if (recentList && recentEmpty) renderRecentList(root, recent, recentList, recentEmpty);
-
-      var form = root.querySelector("#any_login_form");
-      if (form) {
-        form.addEventListener("submit", function (e) {
-          var idInput = form.querySelector("#any_login_id_input");
-          var panelId = root.querySelector('[data-any-login-panel="id"]');
-          if (panelId && panelId.classList.contains("is-active") && idInput && !idInput.value.trim()) {
-            e.preventDefault();
-            idInput.focus();
-          }
-        });
-      }
 
       setupPanel(root);
     }
