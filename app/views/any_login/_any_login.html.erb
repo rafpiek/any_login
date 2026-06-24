@@ -1,8 +1,21 @@
+<% tab_config = any_login_tab_config %>
 <%= render "any_login/assets/js" %>
 <%= render "any_login/assets/css" %>
 
-<div id="any_login" class="<%= any_login_klasses %>" data-any-login>
+<div
+  id="any_login"
+  class="<%= any_login_klasses %>"
+  data-any-login
+  data-any-login-users="<%= h(any_login_users_payload_json) %>"
+  data-any-login-recent="<%= h(any_login_recent_users_payload_json) %>"
+  data-any-login-tabs="<%= h(tab_config[:tabs].to_json) %>"
+  data-any-login-default-tab="<%= h(tab_config[:default]) %>"
+  data-any-login-multi-tabs="<%= tab_config[:multi] ? "true" : "false" %>"
+>
   <%= form_tag any_login.sign_in_path, method: :post, id: "any_login_form" do %>
+    <%= hidden_field_tag :selected_id, "", id: "any_login_selected_id" %>
+    <%= hidden_field_tag :back_to_previous_id, "", id: "any_login_back_to_previous_id" %>
+
     <input type="checkbox" id="any_login_form_toggle" class="any_login_toggle_input" <%= AnyLogin.auto_show ? "checked" : "" %> aria-hidden="true" tabindex="-1">
 
     <label for="any_login_form_toggle" id="any_login_form_toggle_label" class="any_login_fab" title="Switch user (AnyLogin)" aria-label="Open user switcher">
@@ -15,43 +28,89 @@
         <label for="any_login_form_toggle" class="any_login_panel_close" aria-label="Close user switcher">&times;</label>
       </div>
 
+      <% if tab_config[:multi] %>
+        <div class="any_login_tabs" role="tablist" aria-label="Login mode">
+          <% tab_config[:tabs].each do |tab| %>
+            <button
+              type="button"
+              class="any_login_tab<%= " is-active" if tab[:key] == tab_config[:default] %>"
+              role="tab"
+              id="any_login_tab_<%= tab[:key] %>"
+              aria-selected="<%= tab[:key] == tab_config[:default] ? "true" : "false" %>"
+              aria-controls="any_login_panel_<%= tab[:key] %>"
+              data-any-login-tab="<%= tab[:key] %>"
+              tabindex="<%= tab[:key] == tab_config[:default] ? "0" : "-1" %>"
+            ><%= tab[:label] %></button>
+          <% end %>
+        </div>
+      <% end %>
+
       <div class="any_login_panel_body">
         <% if AnyLogin.login_on != :id %>
-          <div class="any_login_field">
-            <label class="any_login_label" for="selected_id"><%= AnyLogin.select_prompt %></label>
-            <%= any_login_select %>
+          <div
+            id="any_login_panel_users"
+            class="any_login_tabpanel<%= tab_config[:default] == "users" ? " is-active" : "" %>"
+            role="tabpanel"
+            aria-labelledby="any_login_tab_users"
+            data-any-login-panel="users"
+            <%= tab_config[:default] == "users" ? "" : 'hidden="hidden"' %>
+          >
+            <div class="any_login_combobox">
+              <label class="any_login_label" for="any_login_user_search">Search users</label>
+              <input
+                type="search"
+                id="any_login_user_search"
+                class="any_login_search_input"
+                placeholder="Type to filter…"
+                autocomplete="off"
+                spellcheck="false"
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="any_login_user_list"
+                aria-autocomplete="list"
+              >
+              <ul id="any_login_user_list" class="any_login_listbox" role="listbox" aria-label="Users"></ul>
+              <p class="any_login_empty any_login_users_empty" hidden>No users match your search.</p>
+            </div>
           </div>
-        <% end %>
-
-        <% if AnyLogin.login_on == :both %>
-          <div class="any_login_divider"><span>or</span></div>
         <% end %>
 
         <% if AnyLogin.login_on != :select %>
-          <div class="any_login_field any_login_field_inline">
-            <label class="any_login_label" for="any_login_id_input">User ID</label>
-            <%= any_login_id_input %>
-            <% if AnyLogin.login_on == :id %>
+          <div
+            id="any_login_panel_id"
+            class="any_login_tabpanel<%= tab_config[:default] == "id" ? " is-active" : "" %>"
+            role="tabpanel"
+            aria-labelledby="any_login_tab_id"
+            data-any-login-panel="id"
+            <%= tab_config[:default] == "id" ? "" : 'hidden="hidden"' %>
+          >
+            <div class="any_login_field">
+              <label class="any_login_label" for="any_login_id_input">User ID</label>
+              <%= text_field_tag :id, "", placeholder: "Paste user ID…", id: "any_login_id_input", autocomplete: "off" %>
+            </div>
+            <div class="any_login_actions">
               <%= any_login_submit %>
-            <% end %>
+            </div>
           </div>
         <% end %>
 
-        <% if AnyLogin.login_on != :id %>
-          <div class="any_login_actions">
-            <%= any_login_submit %>
+        <% if tab_config[:tabs].any? { |t| t[:key] == "recent" } %>
+          <div
+            id="any_login_panel_recent"
+            class="any_login_tabpanel<%= tab_config[:default] == "recent" ? " is-active" : "" %>"
+            role="tabpanel"
+            aria-labelledby="any_login_tab_recent"
+            data-any-login-panel="recent"
+            <%= tab_config[:default] == "recent" ? "" : 'hidden="hidden"' %>
+          >
+            <ul id="any_login_recent_list" class="any_login_recent_list" role="list"></ul>
+            <p class="any_login_empty any_login_recent_empty" hidden>No recent users yet. Switch accounts to build history.</p>
           </div>
         <% end %>
+      </div>
 
-        <div id="current_user_information" class="any_login_session">
-          <%= current_user_information %>
-        </div>
-
-        <% if (history = any_login_previous_select).present? %>
-          <div class="any_login_history">
-            <%= history %>
-          </div>
-        <% end %>
+      <div class="any_login_session_strip" id="current_user_information">
+        <%= current_user_information %>
       </div>
     </div>
   <% end %>

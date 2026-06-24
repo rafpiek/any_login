@@ -9,11 +9,59 @@ module AnyLogin
     if AnyLogin.enabled
 
       def any_login_id_input
-        text_field_tag :id, "", placeholder: "Paste user ID…", id: "any_login_id_input", required: true, autocomplete: "off"
+        text_field_tag :id, "", placeholder: "Paste user ID…", id: "any_login_id_input", autocomplete: "off"
       end
 
       def any_login_submit
         submit_tag AnyLogin.login_button_label
+      end
+
+      def any_login_tab_config
+        users = AnyLogin.login_on != :id
+        id_tab = AnyLogin.login_on != :select
+        recent = any_login_recent_users_payload.any?
+        tabs = []
+        tabs << { key: "users", label: "Users" } if users
+        tabs << { key: "id", label: "ID" } if id_tab
+        tabs << { key: "recent", label: "Recent" } if recent
+        default = tabs.first&.dig(:key) || "users"
+        { tabs: tabs, default: default, multi: tabs.size > 1 }
+      end
+
+      def any_login_users_payload_json
+        any_login_users_payload.to_json
+      end
+
+      def any_login_recent_users_payload_json
+        any_login_recent_users_payload.to_json
+      end
+
+      def any_login_users_payload
+        collection = AnyLogin.collection
+        if collection.grouped?
+          collection.to_a.flat_map do |group_name, pairs|
+            pairs.map { |label, id| { id: id.to_s, label: label.to_s, group: group_name.to_s } }
+          end
+        else
+          collection.to_a.map { |label, id| { id: id.to_s, label: label.to_s, group: nil } }
+        end
+      end
+
+      def any_login_recent_users_payload
+        ids = any_login_previous_ids
+        return [] if ids.blank?
+
+        ids.filter_map do |id|
+          user = AnyLogin.klass.where(AnyLogin.klass.primary_key => id).first
+          next unless user
+
+          label, _pk = if AnyLogin.name_method.is_a?(Symbol)
+            user.send(AnyLogin.name_method)
+          else
+            AnyLogin.name_method.call(user)
+          end
+          { id: user.id.to_s, label: label.to_s, group: nil }
+        end
       end
 
       def any_login_select
@@ -71,7 +119,7 @@ module AnyLogin
             AnyLogin.name_method.call(user)
           end
           content_tag :span, class: "any_login_user_information" do
-            raw("Signed in as <strong>#{h(label)}</strong><br><span>ID: #{h(user.id)}</span>")
+            raw("<span class=\"any_login_session_label\">#{h(label)}</span><span class=\"any_login_session_id\">#{h(user.id)}</span>")
           end
         end
       end

@@ -2,19 +2,20 @@
   #any_login {
     --any-login-bg: #18181b;
     --any-login-surface: #27272a;
+    --any-login-surface-hover: #323238;
     --any-login-border: #3f3f46;
     --any-login-text: #fafafa;
     --any-login-muted: #a1a1aa;
     --any-login-accent: #3b82f6;
     --any-login-accent-hover: #2563eb;
-    --any-login-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
-    --any-login-radius: 12px;
+    --any-login-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    --any-login-radius: 14px;
     --any-login-fab-size: 44px;
     position: fixed;
     z-index: 2147483000;
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
-    line-height: 1.4;
+    line-height: 1.45;
     color: var(--any-login-text);
     pointer-events: none;
   }
@@ -48,7 +49,7 @@
     border: 1px solid var(--any-login-border);
     box-shadow: var(--any-login-shadow);
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    transition: transform 0.15s ease, border-color 0.15s ease;
   }
 
   #any_login .any_login_fab:hover {
@@ -66,13 +67,14 @@
   #any_login .any_login_panel {
     display: none;
     flex-direction: column;
-    width: min(320px, calc(100vw - 24px));
+    width: min(340px, calc(100vw - 24px));
     margin-bottom: 10px;
     background: var(--any-login-bg);
     border: 1px solid var(--any-login-border);
     border-radius: var(--any-login-radius);
     box-shadow: var(--any-login-shadow);
     overflow: hidden;
+    backdrop-filter: blur(12px);
   }
 
   #any_login .any_login_toggle_input:checked ~ .any_login_panel {
@@ -137,15 +139,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 12px;
+    padding: 12px 14px;
     background: var(--any-login-surface);
     border-bottom: 1px solid var(--any-login-border);
   }
 
   #any_login .any_login_panel_title {
     font-weight: 600;
-    font-size: 12px;
-    letter-spacing: 0.02em;
+    font-size: 11px;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--any-login-muted);
   }
@@ -156,7 +158,7 @@
     justify-content: center;
     width: 28px;
     height: 28px;
-    border-radius: 6px;
+    border-radius: 8px;
     color: var(--any-login-muted);
     cursor: pointer;
     font-size: 18px;
@@ -164,83 +166,173 @@
   }
 
   #any_login .any_login_panel_close:hover {
-    background: #3f3f46;
+    background: var(--any-login-surface-hover);
     color: var(--any-login-text);
   }
 
-  #any_login .any_login_panel_body {
-    padding: 12px;
+  #any_login .any_login_tabs {
     display: flex;
+    gap: 2px;
+    padding: 0 10px;
+    border-bottom: 1px solid var(--any-login-border);
+    background: var(--any-login-bg);
+  }
+
+  #any_login .any_login_tab {
+    flex: 1;
+    margin: 0;
+    padding: 10px 8px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--any-login-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.12s ease, border-color 0.12s ease;
+  }
+
+  #any_login .any_login_tab:hover {
+    color: var(--any-login-text);
+  }
+
+  #any_login .any_login_tab.is-active {
+    color: var(--any-login-text);
+    border-bottom-color: var(--any-login-accent);
+  }
+
+  #any_login .any_login_panel_body {
+    padding: 12px 14px;
+    min-height: 140px;
+  }
+
+  #any_login .any_login_tabpanel {
+    display: none;
     flex-direction: column;
     gap: 10px;
   }
 
-  #any_login .any_login_field {
+  #any_login .any_login_tabpanel.is-active {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
   }
 
-  #any_login .any_login_field_inline {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 8px;
-  }
-
-  #any_login .any_login_field_inline .any_login_label {
-    width: 100%;
+  #any_login .any_login_tabpanel[hidden] {
+    display: none !important;
   }
 
   #any_login .any_login_label {
     font-size: 11px;
     font-weight: 500;
     color: var(--any-login-muted);
+    margin-bottom: 6px;
+    display: block;
   }
 
-  #any_login select,
-  #any_login input[type="text"] {
+  #any_login .any_login_field {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #any_login .any_login_search_input,
+  #any_login #any_login_id_input {
     width: 100%;
-    min-height: 36px;
-    padding: 8px 10px;
-    border-radius: 8px;
+    min-height: 38px;
+    padding: 9px 11px;
+    border-radius: 10px;
     border: 1px solid var(--any-login-border);
     background: var(--any-login-surface);
     color: var(--any-login-text);
     font-size: 13px;
-    appearance: auto;
+    outline: none;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  #any_login .any_login_search_input:focus,
+  #any_login #any_login_id_input:focus {
+    border-color: var(--any-login-accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
   }
 
   #any_login #any_login_id_input {
-    width: 100%;
-    flex: 1;
-    min-width: 120px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
   }
 
-  #any_login .any_login_divider {
+  #any_login .any_login_listbox,
+  #any_login .any_login_recent_list {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 10px;
+    border: 1px solid var(--any-login-border);
+    background: var(--any-login-surface);
+  }
+
+  #any_login .any_login_list_group {
+    padding: 6px 8px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--any-login-muted);
+  }
+
+  #any_login .any_login_list_option {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
-    color: var(--any-login-muted);
-    font-size: 11px;
-  }
-
-  #any_login .any_login_divider::before,
-  #any_login .any_login_divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--any-login-border);
-  }
-
-  #any_login .any_login_actions input[type="submit"],
-  #any_login .any_login_field_inline input[type="submit"] {
-    min-height: 36px;
-    padding: 8px 14px;
+    width: 100%;
+    margin: 0;
+    padding: 9px 10px;
     border: none;
     border-radius: 8px;
+    background: transparent;
+    color: var(--any-login-text);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.1s ease;
+  }
+
+  #any_login .any_login_list_option:hover,
+  #any_login .any_login_list_option.is-highlighted {
+    background: var(--any-login-surface-hover);
+  }
+
+  #any_login .any_login_list_option_label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  #any_login .any_login_list_option_badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #3f3f46;
+    color: var(--any-login-muted);
+  }
+
+  #any_login .any_login_empty {
+    margin: 10px 0 0;
+    font-size: 12px;
+    color: var(--any-login-muted);
+    text-align: center;
+  }
+
+  #any_login .any_login_actions input[type="submit"] {
+    width: 100%;
+    min-height: 38px;
+    margin-top: 4px;
+    padding: 9px 14px;
+    border: none;
+    border-radius: 10px;
     background: var(--any-login-accent);
     color: #fff;
     font-size: 13px;
@@ -248,52 +340,45 @@
     cursor: pointer;
   }
 
-  #any_login .any_login_actions input[type="submit"]:hover,
-  #any_login .any_login_field_inline input[type="submit"]:hover {
+  #any_login .any_login_actions input[type="submit"]:hover {
     background: var(--any-login-accent-hover);
   }
 
-  #any_login .any_login_session:empty {
+  #any_login .any_login_session_strip {
+    padding: 10px 14px 12px;
+    border-top: 1px solid var(--any-login-border);
+    background: rgba(39, 39, 42, 0.6);
+  }
+
+  #any_login .any_login_session_strip:empty {
     display: none;
   }
 
   #any_login .any_login_user_information {
-    display: block;
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: var(--any-login-surface);
-    border: 1px solid var(--any-login-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     font-size: 12px;
-    color: var(--any-login-muted);
-    word-break: break-word;
   }
 
-  #any_login .any_login_user_information strong {
+  #any_login .any_login_session_label {
     color: var(--any-login-text);
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  #any_login .any_login_history {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding-top: 4px;
-    border-top: 1px solid var(--any-login-border);
-  }
-
-
-  #any_login .any_login_history_field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-  #any_login .any_login_history_label {
-    font-size: 11px;
-    font-weight: 500;
+  #any_login .any_login_session_id {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
     color: var(--any-login-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  #any_login span#anylogin_back_to_user {
+  #any_login[data-any-login-multi-tabs="false"] .any_login_tabs {
     display: none;
   }
 </style>

@@ -1,24 +1,223 @@
 <script nonce="<%= content_security_policy_nonce %>">
   (function () {
-    function submitOnChange() {
-      var form = document.getElementById("any_login_form");
-      if (form) form.submit();
+    var STORAGE_KEY = "any_login_active_tab";
+
+    function parseJson(el, attr, fallback) {
+      try {
+        return JSON.parse(el.getAttribute(attr) || fallback);
+      } catch (e) {
+        return JSON.parse(fallback);
+      }
     }
 
-    function addChangeListenerTo(elementId) {
-      var element = document.getElementById(elementId);
-      if (element) element.addEventListener("change", submitOnChange);
+    function normalize(s) {
+      return (s || "").toLowerCase().trim();
     }
 
-    function setupAnyLoginHandlers() {
-      addChangeListenerTo("back_to_previous_id");
-      addChangeListenerTo("selected_id");
+    function fuzzyScore(query, label, id) {
+      if (!query) return 1;
+      var q = normalize(query);
+      var l = normalize(label);
+      var i = normalize(id);
+      if (l.indexOf(q) !== -1 || i.indexOf(q) !== -1) return 100 - l.indexOf(q);
+      var qi = 0;
+      for (var li = 0; li < l.length && qi < q.length; li++) {
+        if (l[li] === q[qi]) qi++;
+      }
+      if (qi === q.length) return 50;
+      return 0;
     }
 
-    function setupAnyLoginDismiss() {
-      var root = document.querySelector("[data-any-login]");
-      var toggle = document.getElementById("any_login_form_toggle");
-      if (!root || !toggle) return;
+    function submitForm(form, fieldName, value) {
+      var selected = form.querySelector("#any_login_selected_id");
+      var back = form.querySelector("#any_login_back_to_previous_id");
+      var idInput = form.querySelector("#any_login_id_input");
+      if (selected) selected.value = "";
+      if (back) back.value = "";
+      if (idInput && fieldName !== "id") idInput.value = "";
+
+      if (fieldName === "selected_id" && selected) selected.value = value;
+      else if (fieldName === "back_to_previous_id" && back) back.value = value;
+      else if (fieldName === "id" && idInput) idInput.value = value;
+
+      form.submit();
+    }
+
+    function setActiveTab(root, tabKey) {
+      var tabs = root.querySelectorAll("[data-any-login-tab]");
+      var panels = root.querySelectorAll("[data-any-login-panel]");
+      tabs.forEach(function (btn) {
+        var active = btn.getAttribute("data-any-login-tab") === tabKey;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-selected", active ? "true" : "false");
+        btn.tabIndex = active ? 0 : -1;
+      });
+      panels.forEach(function (panel) {
+        var active = panel.getAttribute("data-any-login-panel") === tabKey;
+        panel.classList.toggle("is-active", active);
+        if (active) panel.removeAttribute("hidden");
+        else panel.setAttribute("hidden", "hidden");
+      });
+      try {
+        sessionStorage.setItem(STORAGE_KEY, tabKey);
+      } catch (e) {}
+    }
+
+    function renderUserList(root, users, query, listEl, emptyEl, highlightIndex) {
+      listEl.innerHTML = "";
+      var scored = users
+        .map(function (u) {
+          return { u: u, score: fuzzyScore(query, u.label, u.id) };
+        })
+        .filter(function (x) {
+          return x.score > 0;
+        })
+        .sort(function (a, b) {
+          return b.score - a.score;
+        });
+
+      var showGroups = !query && users.some(function (u) {
+        return u.group;
+      });
+      var lastGroup = null;
+
+      if (scored.length === 0) {
+        emptyEl.hidden = false;
+        return [];
+      }
+      emptyEl.hidden = true;
+
+      var options = [];
+      scored.forEach(function (item, idx) {
+        var u = item.u;
+        if (showGroups && u.group && u.group !== lastGroup) {
+          lastGroup = u.group;
+          var gh = document.createElement("li");
+          gh.className = "any_login_list_group";
+          gh.textContent = u.group;
+          gh.setAttribute("role", "presentation");
+          listEl.appendChild(gh);
+        }
+
+        var li = document.createElement("li");
+        li.setAttribute("role", "presentation");
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "any_login_list_option";
+        btn.setAttribute("role", "option");
+        btn.setAttribute("data-user-id", u.id);
+        if (idx === highlightIndex) btn.classList.add("is-highlighted");
+
+        var label = document.createElement("span");
+        label.className = "any_login_list_option_label";
+        label.textContent = u.label;
+        btn.appendChild(label);
+
+        if (query && u.group) {
+          var badge = document.createElement("span");
+          badge.className = "any_login_list_option_badge";
+          badge.textContent = u.group;
+          btn.appendChild(badge);
+        }
+
+        btn.addEventListener("click", function () {
+          submitForm(root.querySelector("#any_login_form"), "selected_id", u.id);
+        });
+        li.appendChild(btn);
+        listEl.appendChild(li);
+        options.push(btn);
+      });
+      return options;
+    }
+
+    function renderRecentList(root, recent, listEl, emptyEl) {
+      listEl.innerHTML = "";
+      if (!recent.length) {
+        emptyEl.hidden = false;
+        return;
+      }
+      emptyEl.hidden = true;
+      recent.forEach(function (u) {
+        var li = document.createElement("li");
+        li.setAttribute("role", "listitem");
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "any_login_list_option";
+        var label = document.createElement("span");
+        label.className = "any_login_list_option_label";
+        label.textContent = u.label;
+        btn.appendChild(label);
+        btn.addEventListener("click", function () {
+          submitForm(root.querySelector("#any_login_form"), "back_to_previous_id", u.id);
+        });
+        li.appendChild(btn);
+        listEl.appendChild(li);
+      });
+    }
+
+    function setupTabs(root) {
+      var defaultTab = root.getAttribute("data-any-login-default-tab") || "users";
+      var stored = null;
+      try {
+        stored = sessionStorage.getItem(STORAGE_KEY);
+      } catch (e) {}
+      var tabKey = stored && root.querySelector('[data-any-login-tab="' + stored + '"]') ? stored : defaultTab;
+      setActiveTab(root, tabKey);
+
+      root.querySelectorAll("[data-any-login-tab]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          setActiveTab(root, btn.getAttribute("data-any-login-tab"));
+          var panel = btn.getAttribute("data-any-login-tab");
+          if (panel === "users") {
+            var search = root.querySelector("#any_login_user_search");
+            if (search) search.focus();
+          }
+        });
+      });
+    }
+
+    function setupUsersCombobox(root, users) {
+      var search = root.querySelector("#any_login_user_search");
+      var list = root.querySelector("#any_login_user_list");
+      var empty = root.querySelector(".any_login_users_empty");
+      if (!search || !list) return;
+
+      var highlight = 0;
+      var optionButtons = [];
+
+      function refresh() {
+        optionButtons = renderUserList(root, users, search.value, list, empty, highlight);
+        highlight = Math.min(highlight, Math.max(0, optionButtons.length - 1));
+      }
+
+      search.addEventListener("input", function () {
+        highlight = 0;
+        refresh();
+      });
+
+      search.addEventListener("keydown", function (e) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          highlight = Math.min(highlight + 1, optionButtons.length - 1);
+          refresh();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          highlight = Math.max(highlight - 1, 0);
+          refresh();
+        } else if (e.key === "Enter") {
+          if (optionButtons[highlight]) {
+            e.preventDefault();
+            optionButtons[highlight].click();
+          }
+        }
+      });
+
+      refresh();
+    }
+    function setupDismiss(root) {
+      var toggle = root.querySelector("#any_login_form_toggle");
+      if (!toggle || root.getAttribute("data-any-login-dismiss") === "true") return;
+      root.setAttribute("data-any-login-dismiss", "true");
 
       document.addEventListener("click", function (event) {
         if (!toggle.checked) return;
@@ -27,13 +226,48 @@
       });
 
       document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape" && toggle.checked) toggle.checked = false;
+        if (event.key !== "Escape" || !toggle.checked) return;
+        var search = root.querySelector("#any_login_user_search");
+        if (search && document.activeElement === search && search.value) {
+          search.value = "";
+          search.dispatchEvent(new Event("input"));
+          return;
+        }
+        toggle.checked = false;
       });
     }
 
+    function initRoot(root) {
+      if (root.getAttribute("data-any-login-ready") === "true") return;
+      root.setAttribute("data-any-login-ready", "true");
+
+      var users = parseJson(root, "data-any-login-users", "[]");
+      var recent = parseJson(root, "data-any-login-recent", "[]");
+
+      setupTabs(root);
+      setupUsersCombobox(root, users);
+
+      var recentList = root.querySelector("#any_login_recent_list");
+      var recentEmpty = root.querySelector(".any_login_recent_empty");
+      if (recentList && recentEmpty) renderRecentList(root, recent, recentList, recentEmpty);
+
+      var form = root.querySelector("#any_login_form");
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          var idInput = form.querySelector("#any_login_id_input");
+          var panelId = root.querySelector('[data-any-login-panel="id"]');
+          if (panelId && panelId.classList.contains("is-active") && idInput && !idInput.value.trim()) {
+            e.preventDefault();
+            idInput.focus();
+          }
+        });
+      }
+
+      setupDismiss(root);
+    }
+
     function boot() {
-      setupAnyLoginHandlers();
-      setupAnyLoginDismiss();
+      document.querySelectorAll("[data-any-login]").forEach(initRoot);
     }
 
     ["DOMContentLoaded", "turbolinks:load", "turbo:load"].forEach(function (e) {
