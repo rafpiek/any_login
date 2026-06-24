@@ -32,14 +32,9 @@
       var selected = form.querySelector("#any_login_selected_id");
       var back = form.querySelector("#any_login_back_to_previous_id");
       var idInput = form.querySelector("#any_login_id_input");
-      if (selected) selected.value = "";
-      if (back) back.value = "";
-      if (idInput && fieldName !== "id") idInput.value = "";
-
-      if (fieldName === "selected_id" && selected) selected.value = value;
-      else if (fieldName === "back_to_previous_id" && back) back.value = value;
-      else if (fieldName === "id" && idInput) idInput.value = value;
-
+      if (selected) selected.value = fieldName === "selected_id" ? value : "";
+      if (back) back.value = fieldName === "back_to_previous_id" ? value : "";
+      if (idInput) idInput.value = fieldName === "id" ? value : "";
       form.submit();
     }
 
@@ -73,7 +68,7 @@
       });
       try {
         sessionStorage.setItem(STORAGE_KEY, tabKey);
-      } catch (e) {}
+      } catch (_e) {}
       var toggle = root.querySelector("#any_login_form_toggle");
       if (toggle && toggle.checked) {
         requestAnimationFrame(function () {
@@ -228,14 +223,26 @@
 
       refresh();
     }
-    function setupDismiss(root) {
+
+    function setupPanel(root) {
       var toggle = root.querySelector("#any_login_form_toggle");
-      if (!toggle || root.getAttribute("data-any-login-dismiss") === "true") return;
+      if (!toggle) return;
+
+      function onOpen() {
+        if (!toggle.checked) return;
+        requestAnimationFrame(function () {
+          focusActivePanelInput(root);
+        });
+      }
+
+      toggle.addEventListener("change", onOpen);
+      onOpen();
+
+      if (root.getAttribute("data-any-login-dismiss") === "true") return;
       root.setAttribute("data-any-login-dismiss", "true");
 
       document.addEventListener("click", function (event) {
-        if (!toggle.checked) return;
-        if (root.contains(event.target)) return;
+        if (!toggle.checked || root.contains(event.target)) return;
         toggle.checked = false;
       });
 
@@ -276,27 +283,13 @@
           }
         });
       }
-      setupDismiss(root);
 
-      var toggle = root.querySelector("#any_login_form_toggle");
-      if (toggle) {
-        toggle.addEventListener("change", function () {
-          if (!toggle.checked) return;
-          requestAnimationFrame(function () {
-            focusActivePanelInput(root);
-          });
-        });
-        if (toggle.checked) {
-          requestAnimationFrame(function () {
-            focusActivePanelInput(root);
-          });
-        }
-      }
+      setupPanel(root);
     }
 
     function setupKeyboardShortcut() {
-      if (window.__anyLoginShortcutBound) return;
-      window.__anyLoginShortcutBound = true;
+      if (document.documentElement.getAttribute("data-any-login-shortcut")) return;
+      document.documentElement.setAttribute("data-any-login-shortcut", "true");
 
       document.addEventListener("keydown", function (event) {
         var key = event.key && event.key.toLowerCase();

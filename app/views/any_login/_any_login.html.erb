@@ -6,9 +6,8 @@
   id="any_login"
   class="<%= any_login_klasses %>"
   data-any-login
-  data-any-login-users="<%= h(any_login_users_payload_json) %>"
-  data-any-login-recent="<%= h(any_login_recent_users_payload_json) %>"
-  data-any-login-tabs="<%= h(tab_config[:tabs].to_json) %>"
+  data-any-login-users="<%= h(any_login_users_payload.to_json) %>"
+  data-any-login-recent="<%= h(any_login_recent_users_payload.to_json) %>"
   data-any-login-default-tab="<%= h(tab_config[:default]) %>"
   data-any-login-multi-tabs="<%= tab_config[:multi] ? "true" : "false" %>"
 >
@@ -86,7 +85,7 @@
           >
             <div class="any_login_field">
               <label class="any_login_label" for="any_login_id_input">User ID</label>
-              <%= text_field_tag :id, "", placeholder: "Paste user ID…", id: "any_login_id_input", autocomplete: "off" %>
+              <%= any_login_id_input %>
             </div>
             <div class="any_login_actions">
               <%= any_login_submit %>
