@@ -2,9 +2,9 @@
 
 ## 1.7.0
 
-- deprecate older Rails versions (in CI)
-- add support for Rails 8 (in CI)
-- added CSP support for inline JS/CSS
+- modern dev login UI: floating FAB, tabbed panel (Users / ID / Recent), fuzzy user search, keyboard shortcut (Ctrl/Cmd+Shift+L)
+- `login_on` now controls which tabs appear in the panel
+- removed unused view helpers `any_login_select`, `any_login_previous_select`, `select_html_options` (use default partial)
 
 ## 1.6.0
 
