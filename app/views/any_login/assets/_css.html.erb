@@ -8,8 +8,7 @@
     --any-login-muted: #a1a1aa;
     --any-login-accent: #3b82f6;
     --any-login-accent-hover: #2563eb;
-    --any-login-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-    --any-login-radius: 14px;
+    --any-login-radius: 12px;
     --any-login-fab-size: 44px;
     position: fixed;
     z-index: 2147483000;
@@ -47,14 +46,14 @@
     border-radius: 9999px;
     background: var(--any-login-bg);
     border: 1px solid var(--any-login-border);
-    box-shadow: var(--any-login-shadow);
+    box-shadow: none;
     cursor: pointer;
-    transition: transform 0.15s ease, border-color 0.15s ease;
+    transition: border-color 0.15s ease, background 0.15s ease;
   }
 
   #any_login .any_login_fab:hover {
     border-color: #52525b;
-    transform: scale(1.04);
+    background: var(--any-login-surface);
   }
 
   #any_login .any_login_fab svg {
@@ -68,13 +67,12 @@
     display: none;
     flex-direction: column;
     width: min(340px, calc(100vw - 24px));
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     background: var(--any-login-bg);
     border: 1px solid var(--any-login-border);
     border-radius: var(--any-login-radius);
-    box-shadow: var(--any-login-shadow);
+    box-shadow: none;
     overflow: hidden;
-    backdrop-filter: blur(12px);
   }
 
   #any_login .any_login_toggle_input:checked ~ .any_login_panel {
@@ -139,8 +137,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 14px;
-    background: var(--any-login-surface);
+    padding: 10px 12px;
+    background: var(--any-login-bg);
     border-bottom: 1px solid var(--any-login-border);
   }
 
@@ -172,8 +170,8 @@
 
   #any_login .any_login_tabs {
     display: flex;
-    gap: 2px;
-    padding: 0 10px;
+    gap: 0;
+    padding: 0 8px;
     border-bottom: 1px solid var(--any-login-border);
     background: var(--any-login-bg);
   }
@@ -244,30 +242,32 @@
     color: var(--any-login-text);
     font-size: 13px;
     outline: none;
-    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    transition: border-color 0.12s ease;
   }
 
   #any_login .any_login_search_input:focus,
   #any_login #any_login_id_input:focus {
     border-color: var(--any-login-accent);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
   }
 
   #any_login #any_login_id_input {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
   }
+  #any_login .any_login_combobox .any_login_listbox {
+    margin-top: 8px;
+  }
 
   #any_login .any_login_listbox,
   #any_login .any_login_recent_list {
     list-style: none;
-    margin: 8px 0 0;
-    padding: 4px;
+    margin: 0;
+    padding: 0;
     max-height: 200px;
     overflow-y: auto;
-    border-radius: 10px;
-    border: 1px solid var(--any-login-border);
-    background: var(--any-login-surface);
+    border: none;
+    border-radius: 0;
+    background: transparent;
   }
 
   #any_login .any_login_list_group {
