@@ -138,22 +138,11 @@
       });
     }
 
-    function setupSubmitButtons(root) {
-      root.addEventListener("click", function (event) {
-        var button = event.target.closest(".any_login_list_option");
-        if (!button || !root.contains(button) || !button.form || !button.form.requestSubmit) return;
-
-        event.preventDefault();
-        button.form.requestSubmit(button);
-      });
-    }
-
     function initRoot(root) {
       if (root.getAttribute("data-any-login-ready") === "true") return;
       root.setAttribute("data-any-login-ready", "true");
       setupTabs(root);
       setupUsersCombobox(root);
-      setupSubmitButtons(root);
       setupPanel(root);
     }
 

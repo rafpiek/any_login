@@ -15,7 +15,10 @@ class NavigationTest < ActionDispatch::IntegrationTest
     visit "/"
 
     find("#any_login_form_toggle_label").click
-    click_button @user.email
+    find("[data-any-login-tab='id']").click
+    assert_selector "#any_login_id_input", visible: true
+    fill_in "any_login_id_input", with: @user.id
+    find("#any_login_form input[type='submit']").click
     assert_text("Hello, #{@user.name}")
 
     visit "/about"
