@@ -16,6 +16,7 @@ class NavigationTest < ActionDispatch::IntegrationTest
 
     find("#any_login_form_toggle_label").click
     click_button @user.email
+    sleep 0.2
 
     visit "/about"
 

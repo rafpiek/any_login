@@ -1,7 +1,5 @@
 <script nonce="<%= content_security_policy_nonce %>">
   (function () {
-    var STORAGE_KEY = "any_login_active_tab";
-
     function parseJson(el, attr, fallback) {
       try {
         return JSON.parse(el.getAttribute(attr) || fallback);
@@ -57,9 +55,6 @@
         if (active) panel.removeAttribute("hidden");
         else panel.setAttribute("hidden", "hidden");
       });
-      try {
-        sessionStorage.setItem(STORAGE_KEY, tabKey);
-      } catch (_e) {}
       var toggle = root.querySelector("#any_login_form_toggle");
       if (toggle && toggle.checked) {
         requestAnimationFrame(function () {
@@ -128,6 +123,11 @@
           btn.appendChild(badge);
         }
 
+        btn.addEventListener("click", function (event) {
+          if (!btn.form || !btn.form.requestSubmit) return;
+          event.preventDefault();
+          btn.form.requestSubmit(btn);
+        });
         li.appendChild(btn);
         listEl.appendChild(li);
         options.push(btn);
@@ -152,6 +152,11 @@
         btn.value = u.id;
         btn.className = "any_login_list_option";
         var label = document.createElement("span");
+        btn.addEventListener("click", function (event) {
+          if (!btn.form || !btn.form.requestSubmit) return;
+          event.preventDefault();
+          btn.form.requestSubmit(btn);
+        });
         label.className = "any_login_list_option_label";
         label.textContent = u.label;
         btn.appendChild(label);
@@ -161,13 +166,7 @@
     }
 
     function setupTabs(root) {
-      var defaultTab = root.getAttribute("data-any-login-default-tab") || "users";
-      var stored = null;
-      try {
-        stored = sessionStorage.getItem(STORAGE_KEY);
-      } catch (e) {}
-      var tabKey = stored && root.querySelector('[data-any-login-tab="' + stored + '"]') ? stored : defaultTab;
-      setActiveTab(root, tabKey);
+      setActiveTab(root, root.getAttribute("data-any-login-default-tab") || "users");
 
       root.querySelectorAll("[data-any-login-tab]").forEach(function (btn) {
         btn.addEventListener("click", function () {
@@ -212,7 +211,6 @@
         }
       });
 
-      refresh();
     }
 
     function setupPanel(root) {
@@ -221,9 +219,7 @@
 
       function onOpen() {
         if (!toggle.checked) return;
-        requestAnimationFrame(function () {
-          focusActivePanelInput(root);
-        });
+        setActiveTab(root, root.getAttribute("data-any-login-default-tab") || "users");
       }
 
       toggle.addEventListener("change", onOpen);

@@ -65,12 +65,20 @@
                 aria-controls="any_login_user_list"
                 aria-autocomplete="list"
               >
-              <ul id="any_login_user_list" class="any_login_listbox" role="listbox" aria-label="Users"></ul>
+              <ul id="any_login_user_list" class="any_login_listbox" role="listbox" aria-label="Users">
+                <% any_login_users_payload.each do |user| %>
+                  <li role="presentation">
+                    <button type="submit" name="selected_id" value="<%= h(user[:id]) %>" class="any_login_list_option" role="option" data-user-id="<%= h(user[:id]) %>">
+                      <span class="any_login_list_option_label"><%= user[:label] %></span>
+                    </button>
+                  </li>
+                <% end %>
+              </ul>
               <p class="any_login_empty any_login_users_empty" hidden>No users match your search.</p>
             </div>
           </div>
-        <% end %>
 
+        <% end %>
         <% if AnyLogin.login_on != :select %>
           <div
             id="any_login_panel_id"
@@ -99,7 +107,15 @@
             data-any-login-panel="recent"
             <%= tab_config[:default] == "recent" ? "" : 'hidden="hidden"' %>
           >
-            <ul id="any_login_recent_list" class="any_login_recent_list" role="list"></ul>
+            <ul id="any_login_recent_list" class="any_login_recent_list" role="list">
+              <% any_login_recent_users_payload.each do |user| %>
+                <li role="listitem">
+                  <button type="submit" name="back_to_previous_id" value="<%= h(user[:id]) %>" class="any_login_list_option">
+                    <span class="any_login_list_option_label"><%= user[:label] %></span>
+                  </button>
+                </li>
+              <% end %>
+            </ul>
             <p class="any_login_empty any_login_recent_empty" hidden>No recent users yet. Switch accounts to build history.</p>
           </div>
         <% end %>
