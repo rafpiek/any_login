@@ -1,19 +1,58 @@
-<%= render 'any_login/assets/js' %>
-<%= render 'any_login/assets/css' %>
+<%= render "any_login/assets/js" %>
+<%= render "any_login/assets/css" %>
 
-<div id='any_login' class='<%= any_login_klasses %>'>
-  <%= form_tag any_login.sign_in_path, method: :post, id: 'any_login_form' do %>
-    <label for="any_login_form_toggle" id="any_login_form_toggle_label">
-      <%= render 'any_login/svg/user', title: AnyLogin.klass %>
+<div id="any_login" class="<%= any_login_klasses %>" data-any-login>
+  <%= form_tag any_login.sign_in_path, method: :post, id: "any_login_form" do %>
+    <input type="checkbox" id="any_login_form_toggle" class="any_login_toggle_input" <%= AnyLogin.auto_show ? "checked" : "" %> aria-hidden="true" tabindex="-1">
+
+    <label for="any_login_form_toggle" id="any_login_form_toggle_label" class="any_login_fab" title="Switch user (AnyLogin)" aria-label="Open user switcher">
+      <%= render "any_login/svg/user", title: AnyLogin.klass %>
     </label>
-    <input type="checkbox" id="any_login_form_toggle" <%= AnyLogin.auto_show ? "checked" : "" %>>
-    <span id='any_login_box'>
-      <%= any_login_select %>
-      or by
-      <%= any_login_id_input %>
-      <%= any_login_submit %>
-      <span id='current_user_information'><%= current_user_information %></span>
-      <%= any_login_previous_select %>
-    </span>
+
+    <div id="any_login_box" class="any_login_panel" role="dialog" aria-label="AnyLogin user switcher">
+      <div class="any_login_panel_header">
+        <span class="any_login_panel_title">Dev login</span>
+        <label for="any_login_form_toggle" class="any_login_panel_close" aria-label="Close user switcher">&times;</label>
+      </div>
+
+      <div class="any_login_panel_body">
+        <% if AnyLogin.login_on != :id %>
+          <div class="any_login_field">
+            <label class="any_login_label" for="selected_id"><%= AnyLogin.select_prompt %></label>
+            <%= any_login_select %>
+          </div>
+        <% end %>
+
+        <% if AnyLogin.login_on == :both %>
+          <div class="any_login_divider"><span>or</span></div>
+        <% end %>
+
+        <% if AnyLogin.login_on != :select %>
+          <div class="any_login_field any_login_field_inline">
+            <label class="any_login_label" for="any_login_id_input">User ID</label>
+            <%= any_login_id_input %>
+            <% if AnyLogin.login_on == :id %>
+              <%= any_login_submit %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if AnyLogin.login_on != :id %>
+          <div class="any_login_actions">
+            <%= any_login_submit %>
+          </div>
+        <% end %>
+
+        <div id="current_user_information" class="any_login_session">
+          <%= current_user_information %>
+        </div>
+
+        <% if (history = any_login_previous_select).present? %>
+          <div class="any_login_history">
+            <%= history %>
+          </div>
+        <% end %>
+      </div>
+    </div>
   <% end %>
 </div>

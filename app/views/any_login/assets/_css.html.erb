@@ -1,101 +1,299 @@
 <style nonce="<%= content_security_policy_nonce %>">
   #any_login {
+    --any-login-bg: #18181b;
+    --any-login-surface: #27272a;
+    --any-login-border: #3f3f46;
+    --any-login-text: #fafafa;
+    --any-login-muted: #a1a1aa;
+    --any-login-accent: #3b82f6;
+    --any-login-accent-hover: #2563eb;
+    --any-login-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    --any-login-radius: 12px;
+    --any-login-fab-size: 44px;
     position: fixed;
-    opacity: 0.5;
-    background: #5c4383;
-    color: white;
-    font-size: 16px;
-    line-height: 20px;
-    z-index: 10000;
+    z-index: 2147483000;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--any-login-text);
+    pointer-events: none;
+  }
+
+  #any_login * {
+    box-sizing: border-box;
   }
 
   #any_login form {
     margin: 0;
-    height: auto;
-    padding: 4px 6px;
+    padding: 0;
+    pointer-events: auto;
+  }
+
+  #any_login .any_login_toggle_input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  #any_login .any_login_fab {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    width: var(--any-login-fab-size);
+    height: var(--any-login-fab-size);
+    border-radius: 9999px;
+    background: var(--any-login-bg);
+    border: 1px solid var(--any-login-border);
+    box-shadow: var(--any-login-shadow);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   }
 
-  #any_login #any_login_box {
+  #any_login .any_login_fab:hover {
+    border-color: #52525b;
+    transform: scale(1.04);
+  }
+
+  #any_login .any_login_fab svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--any-login-text);
+    pointer-events: none;
+  }
+
+  #any_login .any_login_panel {
     display: none;
-    vertical-align: middle;
+    flex-direction: column;
+    width: min(320px, calc(100vw - 24px));
+    margin-bottom: 10px;
+    background: var(--any-login-bg);
+    border: 1px solid var(--any-login-border);
+    border-radius: var(--any-login-radius);
+    box-shadow: var(--any-login-shadow);
+    overflow: hidden;
   }
 
-  #any_login_form_toggle {
-    display: none;
+  #any_login .any_login_toggle_input:checked ~ .any_login_panel {
+    display: flex;
   }
 
-  #any_login_form_toggle[type=checkbox]:checked ~ #any_login_box {
-    display: inline;
+  #any_login.any_login_bottom_left form,
+  #any_login.any_login_bottom_right form {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
   }
 
-  #any_login input,
-  #any_login select {
-    color: black;
-    padding: 0;
-    margin: 0;
-    height: auto;
-    float: none;
-    text-decoration: none;
-    position: unset;
-    left: auto;
-    top: auto;
-    font-size: auto;
-    line-height: auto;
+  #any_login.any_login_bottom_right form {
+    align-items: flex-end;
   }
 
-  #any_login.any_login_top_left {
-    top: 0;
-    left: 0;
+  #any_login.any_login_top_left form,
+  #any_login.any_login_top_right form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  #any_login.any_login_top_right {
-    top: 0;
-    right: 0;
+  #any_login.any_login_top_right form {
+    align-items: flex-end;
+  }
+
+  #any_login.any_login_top_left .any_login_panel,
+  #any_login.any_login_top_right .any_login_panel {
+    margin-bottom: 0;
+    margin-top: 10px;
+  }
+
+  #any_login.any_login_bottom_left,
+  #any_login.any_login_bottom_right {
+    bottom: 16px;
   }
 
   #any_login.any_login_bottom_left {
-    bottom: 0;
-    left: 0;
+    left: 16px;
   }
 
   #any_login.any_login_bottom_right {
-    bottom: 0;
-    right: 0;
+    right: 16px;
   }
 
-  #any_login svg {
+  #any_login.any_login_top_left,
+  #any_login.any_login_top_right {
+    top: 16px;
+  }
+
+  #any_login.any_login_top_left {
+    left: 16px;
+  }
+
+  #any_login.any_login_top_right {
+    right: 16px;
+  }
+
+  #any_login .any_login_panel_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--any-login-surface);
+    border-bottom: 1px solid var(--any-login-border);
+  }
+
+  #any_login .any_login_panel_title {
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--any-login-muted);
+  }
+
+  #any_login .any_login_panel_close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: var(--any-login-muted);
     cursor: pointer;
-    vertical-align: middle;
-    fill: #fff;
+    font-size: 18px;
+    line-height: 1;
   }
 
-  #any_login:hover {
-    opacity: 1;
+  #any_login .any_login_panel_close:hover {
+    background: #3f3f46;
+    color: var(--any-login-text);
   }
 
-  #any_login .any_login_user_information {
-    padding-left: 10px;
-    color: yellow;
+  #any_login .any_login_panel_body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #any_login .any_login_field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  #any_login .any_login_field_inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  #any_login .any_login_field_inline .any_login_label {
+    width: 100%;
+  }
+
+  #any_login .any_login_label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--any-login-muted);
+  }
+
+  #any_login select,
+  #any_login input[type="text"] {
+    width: 100%;
+    min-height: 36px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--any-login-border);
+    background: var(--any-login-surface);
+    color: var(--any-login-text);
+    font-size: 13px;
+    appearance: auto;
   }
 
   #any_login #any_login_id_input {
-    width: 30px;
+    width: 100%;
+    flex: 1;
+    min-width: 120px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
   }
 
-  #any_login span#current_user_information {
-    display: inline;
+  #any_login .any_login_divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--any-login-muted);
+    font-size: 11px;
   }
 
-  #any_login span#current_user_information span {
-    display: inline;
+  #any_login .any_login_divider::before,
+  #any_login .any_login_divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--any-login-border);
+  }
+
+  #any_login .any_login_actions input[type="submit"],
+  #any_login .any_login_field_inline input[type="submit"] {
+    min-height: 36px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--any-login-accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #any_login .any_login_actions input[type="submit"]:hover,
+  #any_login .any_login_field_inline input[type="submit"]:hover {
+    background: var(--any-login-accent-hover);
+  }
+
+  #any_login .any_login_session:empty {
+    display: none;
+  }
+
+  #any_login .any_login_user_information {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--any-login-surface);
+    border: 1px solid var(--any-login-border);
+    font-size: 12px;
+    color: var(--any-login-muted);
+    word-break: break-word;
+  }
+
+  #any_login .any_login_user_information strong {
+    color: var(--any-login-text);
+    font-weight: 600;
+  }
+
+  #any_login .any_login_history {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 4px;
+    border-top: 1px solid var(--any-login-border);
+  }
+
+
+  #any_login .any_login_history_field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #any_login .any_login_history_label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--any-login-muted);
   }
 
   #any_login span#anylogin_back_to_user {
-    padding-left: 15px;
-    color: cyan;
-    display: inline;
+    display: none;
   }
 </style>

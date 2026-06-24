@@ -1,25 +1,43 @@
 <script nonce="<%= content_security_policy_nonce %>">
-  function submitOnChange() {
-    document.getElementById('any_login_form').submit();
-  }
-
-  function elementExists(element) {
-    return typeof (element) != 'undefined' && element != null;
-  }
-
-  function addChangeListenerTo(elementId) {
-    let element = document.getElementById(elementId);
-    if (elementExists(element)) {
-      element.addEventListener("change", submitOnChange);
+  (function () {
+    function submitOnChange() {
+      var form = document.getElementById("any_login_form");
+      if (form) form.submit();
     }
-  }
 
-  function setupAnyLoginHandlers() {
-    addChangeListenerTo("back_to_previous_id");
-    addChangeListenerTo("selected_id");
-  }
+    function addChangeListenerTo(elementId) {
+      var element = document.getElementById(elementId);
+      if (element) element.addEventListener("change", submitOnChange);
+    }
 
-  ['DOMContentLoaded', 'turbolinks:load', 'turbo:load'].forEach(function(e) {
-    window.addEventListener(e, setupAnyLoginHandlers);
-  });
+    function setupAnyLoginHandlers() {
+      addChangeListenerTo("back_to_previous_id");
+      addChangeListenerTo("selected_id");
+    }
+
+    function setupAnyLoginDismiss() {
+      var root = document.querySelector("[data-any-login]");
+      var toggle = document.getElementById("any_login_form_toggle");
+      if (!root || !toggle) return;
+
+      document.addEventListener("click", function (event) {
+        if (!toggle.checked) return;
+        if (root.contains(event.target)) return;
+        toggle.checked = false;
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && toggle.checked) toggle.checked = false;
+      });
+    }
+
+    function boot() {
+      setupAnyLoginHandlers();
+      setupAnyLoginDismiss();
+    }
+
+    ["DOMContentLoaded", "turbolinks:load", "turbo:load"].forEach(function (e) {
+      window.addEventListener(e, boot);
+    });
+  })();
 </script>
