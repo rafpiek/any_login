@@ -43,6 +43,19 @@
       form.submit();
     }
 
+    function focusActivePanelInput(root) {
+      var panel = root.querySelector(".any_login_tabpanel.is-active");
+      if (!panel) return;
+      var key = panel.getAttribute("data-any-login-panel");
+      var el =
+        key === "users"
+          ? root.querySelector("#any_login_user_search")
+          : key === "id"
+            ? root.querySelector("#any_login_id_input")
+            : null;
+      if (el) el.focus({ preventScroll: true });
+    }
+
     function setActiveTab(root, tabKey) {
       var tabs = root.querySelectorAll("[data-any-login-tab]");
       var panels = root.querySelectorAll("[data-any-login-panel]");
@@ -61,6 +74,12 @@
       try {
         sessionStorage.setItem(STORAGE_KEY, tabKey);
       } catch (e) {}
+      var toggle = root.querySelector("#any_login_form_toggle");
+      if (toggle && toggle.checked) {
+        requestAnimationFrame(function () {
+          focusActivePanelInput(root);
+        });
+      }
     }
 
     function renderUserList(root, users, query, listEl, emptyEl, highlightIndex) {
@@ -167,11 +186,6 @@
       root.querySelectorAll("[data-any-login-tab]").forEach(function (btn) {
         btn.addEventListener("click", function () {
           setActiveTab(root, btn.getAttribute("data-any-login-tab"));
-          var panel = btn.getAttribute("data-any-login-tab");
-          if (panel === "users") {
-            var search = root.querySelector("#any_login_user_search");
-            if (search) search.focus();
-          }
         });
       });
     }
@@ -262,8 +276,22 @@
           }
         });
       }
-
       setupDismiss(root);
+
+      var toggle = root.querySelector("#any_login_form_toggle");
+      if (toggle) {
+        toggle.addEventListener("change", function () {
+          if (!toggle.checked) return;
+          requestAnimationFrame(function () {
+            focusActivePanelInput(root);
+          });
+        });
+        if (toggle.checked) {
+          requestAnimationFrame(function () {
+            focusActivePanelInput(root);
+          });
+        }
+      }
     }
 
     function boot() {
