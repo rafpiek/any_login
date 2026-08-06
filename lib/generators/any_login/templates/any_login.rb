@@ -33,7 +33,7 @@ AnyLogin.setup do |config|
   # config.auto_show = false
 
   # # limit, integer or :none
-  # config.limit = 10
+  # config.limit = 50
 
   # # Enable http basic authentication
   # config.http_basic_authentication_enabled = false

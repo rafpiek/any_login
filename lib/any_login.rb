@@ -62,7 +62,7 @@ module AnyLogin
 
   # limit, integer or :none
   mattr_accessor :limit
-  @@limit = 10
+  @@limit = 50
 
   # Previous limit, integer or :none
   mattr_accessor :previous_limit

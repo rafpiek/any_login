@@ -123,7 +123,7 @@ It will create the initializer file `config/initializers/any_login.rb`.
 - **name_method** - default value is `proc { |e| [e.email, e.id] }`. You can
   change the label of users displayed in dropdown. For example you can add roles,
   permissions and any other important information.
-- **limit** - limit number of records in dropdown. Default 10. You can put
+- **limit** - limit number of records in dropdown. Default 50. You can put
   `:none` if you don't want to limit the number of users for select.
 - **redirect_path_after_login** - redirect user to path. Default is
   `:root_path`.
