@@ -6,6 +6,7 @@
 - `login_on` now controls which tabs appear in the panel
 - removed unused view helpers `any_login_select`, `any_login_previous_select`, `select_html_options` (use default partial)
 - default `limit` raised from 10 to 50
+- Recent tab listed first (and opens by default) when history has users
 
 ## 1.6.0
 

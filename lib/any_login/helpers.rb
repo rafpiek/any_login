@@ -19,9 +19,9 @@ module AnyLogin
       def any_login_tab_config
         @any_login_tab_config ||= begin
           tabs = []
+          tabs << { key: "recent", label: "Recent" } if any_login_recent_users_payload.any?
           tabs << { key: "users", label: "Users" } if AnyLogin.login_on != :id
           tabs << { key: "id", label: "ID" } if AnyLogin.login_on != :select
-          tabs << { key: "recent", label: "Recent" } if any_login_recent_users_payload.any?
 
           { tabs: tabs, default: tabs.first&.dig(:key) || "users", multi: tabs.size > 1 }
         end
