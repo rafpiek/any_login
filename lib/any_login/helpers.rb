@@ -19,11 +19,17 @@ module AnyLogin
       def any_login_tab_config
         @any_login_tab_config ||= begin
           tabs = []
+          tabs << { key: "pinned", label: "Pinned" }
           tabs << { key: "recent", label: "Recent" } if any_login_recent_users_payload.any?
           tabs << { key: "users", label: "Users" } if AnyLogin.login_on != :id
           tabs << { key: "id", label: "ID" } if AnyLogin.login_on != :select
 
-          { tabs: tabs, default: tabs.first&.dig(:key) || "users", multi: tabs.size > 1 }
+          default = tabs.find { |tab| tab[:key] == "recent" }&.dig(:key) ||
+                    tabs.find { |tab| tab[:key] == "users" }&.dig(:key) ||
+                    tabs.find { |tab| tab[:key] == "id" }&.dig(:key) ||
+                    "pinned"
+
+          { tabs: tabs, default: default, multi: tabs.size > 1 }
         end
       end
 
@@ -60,23 +66,52 @@ module AnyLogin
 
       def current_user_information
         method_name = AnyLogin.provider.constantize::Controller.any_login_current_user_method
-        return unless respond_to?(method_name)
-
-        user = send(method_name)
+        user = any_login_detect_current_user(method_name)
         return unless user
 
+
         label, = any_login_user_label_and_id(user)
-        content_tag :span, class: "any_login_user_information" do
+        content_tag :span, class: "any_login_user_information", data: {
+          any_login_current_id: user.id,
+          any_login_current_label: label
+        } do
           safe_join(
             [
-              content_tag(:span, label, class: "any_login_session_label"),
-              content_tag(:span, user.id, class: "any_login_session_id")
+              content_tag(:span, class: "any_login_session_meta") do
+                safe_join(
+                  [
+                    content_tag(:span, label, class: "any_login_session_label"),
+                    content_tag(:span, user.id, class: "any_login_session_id")
+                  ]
+                )
+              end,
+              content_tag(
+                :button,
+                "Pin",
+                type: "button",
+                class: "any_login_pin_button",
+                data: { any_login_pin: true },
+                aria: { pressed: "false", label: "Pin current user" }
+              )
             ]
           )
         end
       end
 
       private
+      def any_login_detect_current_user(method_name)
+        names = [method_name, :current_user].compact.uniq
+        [self, (controller if defined?(controller))].compact.each do |source|
+          names.each do |name|
+            next unless source.respond_to?(name, true)
+
+            user = source.send(name)
+            return user if user
+          end
+        end
+
+        request.env["warden"].user if defined?(request) && request && request.env["warden"]
+      end
 
       def any_login_user_label_and_id(user)
         if AnyLogin.name_method.is_a?(Symbol)
@@ -86,5 +121,6 @@ module AnyLogin
         end
       end
     end
+
   end
 end

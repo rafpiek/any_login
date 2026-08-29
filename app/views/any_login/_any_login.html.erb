@@ -9,6 +9,8 @@
   class="<%= any_login_klasses %>"
   data-any-login
   data-any-login-default-tab="<%= h(tab_config[:default]) %>"
+  data-any-login-users-path="<%= any_login.users_path %>"
+  data-any-login-storage-key="<%= h("any_login_pinned_#{AnyLogin.cookie_name}") %>"
 >
   <%= form_tag any_login.sign_in_path, method: :post, id: "any_login_form" do %>
     <input type="checkbox" id="any_login_form_toggle" class="any_login_toggle_input" <%= AnyLogin.auto_show ? "checked" : "" %> aria-hidden="true" tabindex="-1">
@@ -41,6 +43,18 @@
       <% end %>
 
       <div class="any_login_panel_body">
+        <div
+          id="any_login_panel_pinned"
+          class="any_login_tabpanel<%= tab_config[:default] == "pinned" ? " is-active" : "" %>"
+          role="tabpanel"
+          aria-labelledby="any_login_tab_pinned"
+          data-any-login-panel="pinned"
+          <%= tab_config[:default] == "pinned" ? "" : 'hidden="hidden"' %>
+        >
+          <ul id="any_login_pinned_list" class="any_login_recent_list" role="list"></ul>
+          <p class="any_login_empty any_login_pinned_empty">No pinned users.</p>
+        </div>
+
         <% if AnyLogin.login_on != :id %>
           <div
             id="any_login_panel_users"

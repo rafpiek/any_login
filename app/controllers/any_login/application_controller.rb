@@ -19,6 +19,17 @@ module AnyLogin
       AnyLogin.provider.constantize::Controller.instance_method(:any_login_sign_in).bind(self).call
     end
 
+    def users
+      unless AnyLogin.verify_access_proc.call(self)
+        render json: { users: [] }, status: :forbidden
+        return
+      end
+
+      users = AnyLogin.search_users(params[:q]).map { |user| AnyLogin.user_payload(user) }
+      render json: { users: users }
+    end
+
+
     private
 
     def try_not_to_leak_any_login_is_installed
@@ -44,6 +55,8 @@ module AnyLogin
     def add_to_previous
       cookies[AnyLogin.cookie_name] = ([user_id] + previous_list).uniq.join(',')
     end
+
+
 
   end
 end

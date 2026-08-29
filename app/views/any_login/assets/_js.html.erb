@@ -4,6 +4,12 @@
       return (value || "").toLowerCase().trim();
     }
 
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, function (ch) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch];
+      });
+    }
+
     function focusActivePanelInput(root) {
       var panel = root.querySelector(".any_login_tabpanel.is-active");
       if (!panel) return;
@@ -52,11 +58,20 @@
     function setupUsersCombobox(root) {
       var search = root.querySelector("#any_login_user_search");
       var empty = root.querySelector(".any_login_users_empty");
-      var userItems = Array.prototype.slice.call(root.querySelectorAll("[data-any-login-user]"));
-      if (!search || !empty || !userItems.length) return;
+      var list = root.querySelector("#any_login_user_list");
+      var usersPath = root.getAttribute("data-any-login-users-path");
+      if (!search || !empty || !list) return;
 
+      var originalHtml = list.innerHTML;
+      var userItems = [];
       var visibleButtons = [];
       var highlight = 0;
+      var timer = null;
+      var requestId = 0;
+
+      function collectItems() {
+        userItems = Array.prototype.slice.call(list.querySelectorAll("[data-any-login-user]"));
+      }
 
       function applyHighlight() {
         visibleButtons.forEach(function (btn, index) {
@@ -70,9 +85,10 @@
 
         userItems.forEach(function (item) {
           var button = item.querySelector(".any_login_list_option");
-          var matches = !query || normalize(button.getAttribute("data-search")).indexOf(query) !== -1;
+          var haystack = button ? button.getAttribute("data-search") : "";
+          var matches = !query || normalize(haystack).indexOf(query) !== -1;
           item.hidden = !matches;
-          if (matches) visibleButtons.push(button);
+          if (matches && button) visibleButtons.push(button);
         });
 
         highlight = Math.min(highlight, Math.max(0, visibleButtons.length - 1));
@@ -80,9 +96,76 @@
         applyHighlight();
       }
 
+      function restoreOriginal() {
+        list.innerHTML = originalHtml;
+        collectItems();
+        refresh();
+      }
+
+      function renderUsers(users) {
+        list.innerHTML = (users || []).map(function (user) {
+          var id = escapeHtml(String(user.id));
+          var label = escapeHtml(String(user.label || ""));
+          var group = user.group ? escapeHtml(String(user.group)) : "";
+          var searchText = escapeHtml([user.label, user.id, user.group].filter(Boolean).join(" "));
+          return '<li role="presentation" data-any-login-user>' +
+            '<button type="submit" name="selected_id" value="' + id + '" class="any_login_list_option" role="option" data-user-id="' + id + '" data-search="' + searchText + '">' +
+            '<span class="any_login_list_option_label">' + label + '</span>' +
+            (group ? '<span class="any_login_list_option_badge">' + group + '</span>' : "") +
+            "</button></li>";
+        }).join("");
+        collectItems();
+        visibleButtons = userItems.map(function (item) {
+          return item.querySelector(".any_login_list_option");
+        }).filter(Boolean);
+        highlight = 0;
+        empty.hidden = visibleButtons.length > 0;
+        applyHighlight();
+      }
+
+      function searchRemote(query) {
+        if (!usersPath) {
+          collectItems();
+          refresh();
+          return;
+        }
+
+        var id = ++requestId;
+        fetch(usersPath + "?q=" + encodeURIComponent(query), {
+          headers: { Accept: "application/json" },
+          credentials: "same-origin"
+        }).then(function (res) {
+          return res.ok ? res.json() : Promise.reject();
+        }).then(function (data) {
+          if (id !== requestId) return;
+          renderUsers(data && data.users);
+        }).catch(function () {
+          if (id !== requestId) return;
+          renderUsers([]);
+        });
+      }
+
+      collectItems();
+
       search.addEventListener("input", function () {
         highlight = 0;
-        refresh();
+        var query = normalize(search.value);
+        if (!query) {
+          clearTimeout(timer);
+          requestId += 1;
+          restoreOriginal();
+          return;
+        }
+
+        if (!usersPath) {
+          refresh();
+          return;
+        }
+
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          searchRemote(search.value);
+        }, 200);
       });
 
       search.addEventListener("keydown", function (event) {
@@ -102,6 +185,96 @@
       });
 
       refresh();
+    }
+
+    function setupPinned(root) {
+      var list = root.querySelector("#any_login_pinned_list");
+      var empty = root.querySelector(".any_login_pinned_empty");
+      var pinButton = root.querySelector("[data-any-login-pin]");
+      var storageKey = root.getAttribute("data-any-login-storage-key") || "any_login_pinned";
+      if (!list || !empty) return;
+
+      function readPins() {
+        try {
+          var parsed = JSON.parse(window.localStorage.getItem(storageKey) || "[]");
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function writePins(pins) {
+        window.localStorage.setItem(storageKey, JSON.stringify(pins));
+      }
+
+      function currentUser() {
+        var info = root.querySelector(".any_login_user_information");
+        if (!info) return null;
+        var id = info.getAttribute("data-any-login-current-id");
+        if (!id) return null;
+        return { id: String(id), label: info.getAttribute("data-any-login-current-label") || String(id) };
+      }
+
+      function isPinned(id) {
+        return readPins().some(function (pin) {
+          return String(pin.id) === String(id);
+        });
+      }
+
+      function updatePinButton() {
+        if (!pinButton) return;
+        var user = currentUser();
+        if (!user) {
+          pinButton.hidden = true;
+          return;
+        }
+        var pinned = isPinned(user.id);
+        pinButton.hidden = false;
+        pinButton.textContent = pinned ? "Unpin" : "Pin";
+        pinButton.setAttribute("aria-pressed", pinned ? "true" : "false");
+      }
+
+      function renderPins() {
+        var pins = readPins();
+        list.innerHTML = pins.map(function (pin) {
+          var id = escapeHtml(String(pin.id));
+          var label = escapeHtml(String(pin.label || pin.id));
+          return '<li class="any_login_pinned_row" role="listitem">' +
+            '<button type="submit" name="selected_id" value="' + id + '" class="any_login_list_option" data-any-login-pinned-id="' + id + '">' +
+            '<span class="any_login_list_option_label">' + label + '</span>' +
+            "</button>" +
+            '<button type="button" class="any_login_unpin_button" data-any-login-unpin="' + id + '" aria-label="Unpin user">&times;</button>' +
+            "</li>";
+        }).join("");
+        empty.hidden = pins.length > 0;
+        updatePinButton();
+      }
+
+      if (pinButton) {
+        pinButton.addEventListener("click", function () {
+          var user = currentUser();
+          if (!user) return;
+          var pins = isPinned(user.id)
+            ? readPins().filter(function (pin) { return String(pin.id) !== user.id; })
+            : [{ id: user.id, label: user.label }].concat(
+                readPins().filter(function (pin) { return String(pin.id) !== user.id; })
+              );
+          writePins(pins);
+          renderPins();
+        });
+      }
+
+      list.addEventListener("click", function (event) {
+        var unpin = event.target.closest("[data-any-login-unpin]");
+        if (!unpin) return;
+        event.preventDefault();
+        event.stopPropagation();
+        var id = unpin.getAttribute("data-any-login-unpin");
+        writePins(readPins().filter(function (pin) { return String(pin.id) !== String(id); }));
+        renderPins();
+      });
+
+      renderPins();
     }
 
     function setupPanel(root) {
@@ -143,6 +316,7 @@
       root.setAttribute("data-any-login-ready", "true");
       setupTabs(root);
       setupUsersCombobox(root);
+      setupPinned(root);
       setupPanel(root);
     }
 

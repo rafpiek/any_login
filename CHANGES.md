@@ -2,6 +2,9 @@
 
 ## 1.7.0
 
+- pin the current user and keep pins in a Pinned tab (localStorage)
+- search users beyond the limited Users list
+
 - modern dev login UI: floating FAB, tabbed panel (Users / ID / Recent), user search, keyboard shortcut (Ctrl/Cmd+Shift+L)
 - `login_on` now controls which tabs appear in the panel
 - removed unused view helpers `any_login_select`, `any_login_previous_select`, `select_html_options` (use default partial)

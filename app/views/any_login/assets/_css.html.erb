@@ -343,9 +343,18 @@
 
   #any_login .any_login_user_information {
     display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  #any_login .any_login_session_meta {
+    display: flex;
     flex-direction: column;
     gap: 2px;
-    font-size: 12px;
+    min-width: 0;
+    flex: 1;
   }
 
   #any_login .any_login_session_label {
@@ -363,6 +372,45 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  #any_login .any_login_pin_button,
+  #any_login .any_login_unpin_button {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 4px 8px;
+    border: 1px solid var(--any-login-border);
+    border-radius: 8px;
+    background: var(--any-login-surface);
+    color: var(--any-login-text);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  #any_login .any_login_pin_button:hover,
+  #any_login .any_login_unpin_button:hover {
+    background: var(--any-login-surface-hover);
+  }
+
+  #any_login .any_login_unpin_button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--any-login-muted);
+  }
+
+  #any_login .any_login_pinned_row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  #any_login .any_login_pinned_row .any_login_list_option {
+    flex: 1;
+    min-width: 0;
   }
 
 </style>
